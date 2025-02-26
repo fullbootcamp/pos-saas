@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es2020", // Or your target
+    "module": "commonjs", // Or your module system
+    "outDir": "./dist", // Output directory for compiled JavaScript
+    "strict": true, // Enable strict type checking (recommended)
+    "esModuleInterop": true, // Handle ES module interop
+    "skipLibCheck": true, // Skip type checking of declaration files
+    "forceConsistentCasingInFileNames": true, // Enforce consistent casing
+    "typeRoots": [ // Important!
+      "node_modules/@types"
+    ]
+  },
+  "include": [
+    "src/**/*.ts", // Or where your TypeScript code is
+    "server/**/*.ts" // Include your server directory as well if it's not already included
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

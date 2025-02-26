@@ -1,0 +1,2 @@
+export declare const register: (email: string, password: string) => Promise<{ message: string }>;
+export declare const login: (email: string, password: string) => Promise<{ message: string, user?: { id: number, email: string, password: string } }>;
