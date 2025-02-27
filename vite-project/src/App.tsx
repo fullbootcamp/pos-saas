@@ -8,6 +8,14 @@ import Login from './pages/Login'; // Assume this exists
 import Register from './pages/Register'; // Assume this exists
 import ConfirmEmail from './pages/ConfirmEmail'; // Assume this exists
 import EmailVerified from './pages/EmailVerified'; // Assume this exists
+import StatusDashboard from './pages/StatusDashboard'; // Assume this exists
+import ProtectedRoute from './pages/ProtectedRoute'; // Import ProtectedRoute
+
+// Define placeholder components locally to avoid import conflicts
+const ChooseStoreType: React.FC = () => <div>Choose Store Type Page</div>;
+const PlanSelection: React.FC = () => <div>Plan Selection Page</div>;
+const Payment: React.FC = () => <div>Payment Page</div>;
+const Dashboard: React.FC = () => <div>Dashboard Page</div>;
 
 const App: React.FC = () => {
   const token = localStorage.getItem('token'); // Check authentication status
@@ -17,21 +25,29 @@ const App: React.FC = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Landing />} /> {/* Public landing page */}
+        <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/statusdashboard" replace />} />
+        <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/statusdashboard" replace />} />
+        <Route path="/confirm-email" element={<ConfirmEmail />} /> {/* No auth redirect for pre-login */}
+        <Route path="/email-verified" element={<EmailVerified />} /> {/* No auth redirect for pre-login */}
         <Route
-          path="/login"
-          element={!isAuthenticated ? <Login /> : <Navigate to="/superadmin-dashboard/tasks" replace />}
+          path="/statusdashboard"
+          element={<ProtectedRoute>{<StatusDashboard />}</ProtectedRoute>}
         />
         <Route
-          path="/register"
-          element={!isAuthenticated ? <Register /> : <Navigate to="/superadmin-dashboard/tasks" replace />}
+          path="/choose-store-type"
+          element={<ProtectedRoute>{<ChooseStoreType />}</ProtectedRoute>}
         />
         <Route
-          path="/confirm-email"
-          element={!isAuthenticated ? <ConfirmEmail /> : <Navigate to="/superadmin-dashboard/tasks" replace />}
+          path="/plan-selection"
+          element={<ProtectedRoute>{<PlanSelection />}</ProtectedRoute>}
         />
         <Route
-          path="/email-verified"
-          element={!isAuthenticated ? <EmailVerified /> : <Navigate to="/superadmin-dashboard/tasks" replace />}
+          path="/payment"
+          element={<ProtectedRoute requireStoreSetup>{<Payment />}</ProtectedRoute>}
+        />
+        <Route
+          path="/dashboard/:storeSlug"
+          element={<ProtectedRoute requireStoreSetup>{<Dashboard />}</ProtectedRoute>}
         />
         <Route
           path="/superadmin-dashboard"
@@ -41,7 +57,7 @@ const App: React.FC = () => {
           <Route path="users" element={<UsersPage />} />
           <Route path="" element={<Navigate to="tasks" replace />} /> {/* Default to tasks */}
         </Route>
-        <Route path="*" element={<Navigate to={isAuthenticated ? "/superadmin-dashboard/tasks" : "/login"} replace />} /> {/* Catch-all */}
+        <Route path="*" element={<Navigate to={isAuthenticated ? "/statusdashboard" : "/login"} replace />} /> {/* Catch-all */}
       </Routes>
     </Router>
   );

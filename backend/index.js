@@ -124,7 +124,7 @@ app.post('/api/auth/login', async (req, res) => {
       ? '/superadmin-dashboard' 
       : (user[0].email_verified_at && user[0].is_store_setup_complete && user[0].plan_id && store.length > 0) 
         ? `/dashboard/${store[0].slug}` 
-        : '/status-dashboard';
+        : '/statusdashboard';
 
     res.json({
       token,

@@ -1,8 +1,9 @@
-// File: src/pages/StatusDashboard.tsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
+import { CheckCircleIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
+import { motion } from 'framer-motion'; // Ensure framer-motion is installed
 
 interface Status {
   userName?: string;
@@ -11,6 +12,9 @@ interface Status {
   storeSetup: boolean;
   planSelected: boolean;
   dashboardCreated: boolean;
+  payment?: boolean; // Added to track payment status
+  storeSlug?: string;
+  planType?: string; // e.g., 'free', 'monthly', 'yearly'
 }
 
 const StatusDashboard: React.FC = () => {
@@ -39,10 +43,9 @@ const StatusDashboard: React.FC = () => {
           const userStatus = response.data.status;
           console.log('Parsed status:', userStatus);
           setStatus(userStatus);
-          // Redirect if all but dashboardCreated are complete
-          if (userStatus.registration && userStatus.emailVerified && userStatus.storeSetup && userStatus.planSelected) {
-            const storeSlug = localStorage.getItem('storeSlug') || 'default';
-            console.log('Redirecting to dashboard:', `/dashboard/${storeSlug}`);
+          // Redirect based on status
+          if (userStatus.registration && userStatus.emailVerified && userStatus.storeSetup && userStatus.planSelected && userStatus.dashboardCreated) {
+            const storeSlug = userStatus.storeSlug || localStorage.getItem('storeSlug') || 'default';
             navigate(`/dashboard/${storeSlug}`);
           }
         }
@@ -62,21 +65,26 @@ const StatusDashboard: React.FC = () => {
   }, [navigate]);
 
   const handleContinue = () => {
-    if (status) {
-      console.log('Current status in handleContinue:', status);
-      if (!status.storeSetup) {
-        console.log('Redirecting to choose-store-type');
-        navigate('/choose-store-type');
-      } else if (!status.planSelected) {
-        console.log('Redirecting to plan-selection');
-        navigate('/plan-selection');
-      } else if (!status.dashboardCreated) {
-        console.log('Redirecting to dashboard creation:', `/dashboard/${localStorage.getItem('storeSlug') || ''}`);
-        navigate(`/dashboard/${localStorage.getItem('storeSlug') || ''}`);
-      } else {
-        console.log('Redirecting to dashboard:', `/dashboard/${localStorage.getItem('storeSlug') || ''}`);
-        navigate(`/dashboard/${localStorage.getItem('storeSlug') || ''}`);
-      }
+    if (!status) return;
+
+    console.log('Current status in handleContinue:', status);
+    if (!status.storeSetup) {
+      console.log('Redirecting to choose-store-type');
+      navigate('/choose-store-type');
+    } else if (!status.planSelected) {
+      console.log('Redirecting to plan-selection');
+      navigate('/plan-selection');
+    } else if (status.planSelected && status.planType === 'free') {
+      console.log('Redirecting to dashboard for free demo');
+      const storeSlug = status.storeSlug || localStorage.getItem('storeSlug') || 'default';
+      navigate(`/dashboard/${storeSlug}`);
+    } else if (status.planSelected && status.planType !== 'free' && !status.payment) {
+      console.log('Redirecting to payment page');
+      navigate('/payment');
+    } else if (status.dashboardCreated) {
+      console.log('Redirecting to dashboard');
+      const storeSlug = status.storeSlug || localStorage.getItem('storeSlug') || 'default';
+      navigate(`/dashboard/${storeSlug}`);
     }
   };
 
@@ -104,31 +112,62 @@ const StatusDashboard: React.FC = () => {
 
   return (
     <Layout title="Status Dashboard">
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-indigo-600 p-6">
-        <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full transform transition-all duration-300 hover:scale-105">
+      <motion.div
+        className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-indigo-600 p-6"
+        initial="hidden"
+        animate="visible"
+        variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.5 } } }}
+      >
+        <motion.div
+          className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full transform transition-all duration-300 hover:scale-105"
+          initial={{ scale: 0.9 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
           <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Welcome, {status.userName || 'User'}!</h1>
           <div className="w-full h-2 bg-gray-300 rounded-full mb-6 overflow-hidden">
-            <div
+            <motion.div
               className="h-full bg-purple-600 rounded-full transition-all duration-500"
-              style={{ width: `${calculateProgress(status)}%` }}
-            ></div>
+              initial={{ width: 0 }}
+              animate={{ width: `${calculateProgress(status)}%` }}
+            ></motion.div>
           </div>
           <div className="space-y-4 mb-8">
-            <div className="text-lg">Registration: <span className={getStatusStyle(status.registration)}>{status.registration ? '✅ Completed' : '⚠️ Not Started'}</span></div>
-            <div className="text-lg">Email Verified: <span className={getStatusStyle(status.emailVerified)}>{status.emailVerified ? '✅ Completed' : '⚠️ Not Started'}</span></div>
-            <div className="text-lg">Store Setup: <span className={getStatusStyle(status.storeSetup)}>{status.storeSetup ? '✅ Completed' : '⚠️ Not Started'}</span></div>
-            <div className="text-lg">Plan Selected: <span className={getStatusStyle(status.planSelected)}>{status.planSelected ? '✅ Completed' : '⚠️ Not Started'}</span></div>
-            <div className="text-lg">Dashboard Created: <span className={getStatusStyle(status.dashboardCreated)}>{status.dashboardCreated ? '✅ Completed' : '⚠️ Not Started'}</span></div>
+            <div className="text-lg flex items-center space-x-2">
+              <CheckCircleIcon className={`h-6 w-6 ${getStatusStyle(status.registration)}`} />
+              <span>Registration: {status.registration ? '✅ Completed' : '⚠️ Not Started'}</span>
+            </div>
+            <div className="text-lg flex items-center space-x-2">
+              <CheckCircleIcon className={`h-6 w-6 ${getStatusStyle(status.emailVerified)}`} />
+              <span>Email Verified: {status.emailVerified ? '✅ Completed' : '⚠️ Not Started'}</span>
+            </div>
+            <div className="text-lg flex items-center space-x-2">
+              <CheckCircleIcon className={`h-6 w-6 ${getStatusStyle(status.storeSetup)}`} />
+              <span>Store Setup: {status.storeSetup ? '✅ Completed' : '⚠️ Not Started'}</span>
+            </div>
+            <div className="text-lg flex items-center space-x-2">
+              <CheckCircleIcon className={`h-6 w-6 ${getStatusStyle(status.planSelected)}`} />
+              <span>Plan Selected: {status.planSelected ? '✅ Completed' : '⚠️ Not Started'}</span>
+            </div>
+            <div className="text-lg flex items-center space-x-2">
+              <CheckCircleIcon className={`h-6 w-6 ${getStatusStyle(status.dashboardCreated)}`} />
+              <span>Dashboard Created: {status.dashboardCreated ? '✅ Completed' : '⚠️ Not Started'}</span>
+            </div>
           </div>
-          <button
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300 disabled:opacity-50"
+          <motion.button
+            className="w-full py-3 px-6 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 transition-all duration-300 flex items-center justify-center space-x-2"
             onClick={handleContinue}
             disabled={loading || !status}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            {!status.storeSetup ? 'Set Up Your Store' : !status.planSelected ? 'Select a Plan' : !status.dashboardCreated ? 'Create Dashboard' : 'Go to Dashboard'}
-          </button>
-        </div>
-      </div>
+            <ArrowRightIcon className="h-5 w-5" />
+            <span>
+              {!status.storeSetup ? 'Set Up Your Store' : !status.planSelected ? 'Select a Plan' : !status.dashboardCreated ? 'Create Dashboard' : 'Go to Dashboard'}
+            </span>
+          </motion.button>
+        </motion.div>
+      </motion.div>
     </Layout>
   );
 };
