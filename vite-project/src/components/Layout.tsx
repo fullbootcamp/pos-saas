@@ -1,5 +1,4 @@
-// File: src/components/Layout.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Footer from './Footer';
 
@@ -13,7 +12,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const checkTokenValidity = () => {
+  const checkTokenValidity = useCallback(() => {
     const token = localStorage.getItem('token');
     if (!token) {
       setIsLoggedIn(false);
@@ -27,33 +26,38 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
       if (now >= exp) {
         localStorage.removeItem('token');
         setIsLoggedIn(false);
+        if (location.pathname !== '/' && !location.pathname.startsWith('/login') && !location.pathname.startsWith('/register') && !location.pathname.startsWith('/confirm-email') && !location.pathname.startsWith('/email-verified')) {
+          navigate('/login');
+        }
         return false;
       }
       setIsLoggedIn(true);
       return true;
     } catch (error) {
       console.error('Token decode error:', error);
-      localStorage.removeItem('token'); // Clear invalid token
+      localStorage.removeItem('token');
       setIsLoggedIn(false);
+      if (location.pathname !== '/' && !location.pathname.startsWith('/login') && !location.pathname.startsWith('/register') && !location.pathname.startsWith('/confirm-email') && !location.pathname.startsWith('/email-verified')) {
+        navigate('/login');
+      }
       return false;
     }
-  };
+  }, [navigate, location]);
 
   useEffect(() => {
     checkTokenValidity();
-    // Re-check on location change (e.g., navigation)
     const handleStorageChange = () => checkTokenValidity();
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [location.pathname]);
+  }, [checkTokenValidity]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    setIsLoggedIn(false); // Force UI update
+    setIsLoggedIn(false);
     navigate('/login');
   };
 
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/confirm-email' || location.pathname === '/email-verified';
   const isLandingPage = location.pathname === '/';
 
   return (
@@ -72,7 +76,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
                 {isLoggedIn ? (
                   <button
                     onClick={handleLogout}
-                    className="bg-vintage-rose-vibrant-pink text-white py-2 px-4 rounded-md hover:bg-vintage-rose-medium-purple transition-all duration-300 font-semibold"
+                    className="bg-pink-600 text-white py-2 px-4 rounded-md hover:bg-pink-700 transition-all duration-300 font-semibold"
                   >
                     Logout
                   </button>
@@ -81,7 +85,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
                     <a href="/login" className="hover:underline text-lg text-white">Login</a>
                     <button
                       onClick={() => navigate('/register')}
-                      className="bg-vintage-rose-vibrant-pink text-white py-2 px-4 rounded-md hover:bg-vintage-rose-medium-purple transition-all duration-300 font-semibold"
+                      className="bg-pink-600 text-white py-2 px-4 rounded-md hover:bg-pink-700 transition-all duration-300 font-semibold"
                     >
                       Start FREE Trial
                     </button>
@@ -89,19 +93,13 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
                 )}
               </>
             )}
-            {!isLandingPage && !isAuthPage && (
-              <>
-                {isLoggedIn ? (
-                  <button
-                    onClick={handleLogout}
-                    className="bg-vintage-rose-vibrant-pink text-white py-2 px-4 rounded-md hover:bg-vintage-rose-medium-purple transition-all duration-300 font-semibold"
-                  >
-                    Logout
-                  </button>
-                ) : (
-                  <a href="/login" className="hover:underline text-lg text-white">Login</a>
-                )}
-              </>
+            {!isLandingPage && !isAuthPage && isLoggedIn && (
+              <button
+                onClick={handleLogout}
+                className="bg-pink-600 text-white py-2 px-4 rounded-md hover:bg-pink-700 transition-all duration-300 font-semibold"
+              >
+                Logout
+              </button>
             )}
           </nav>
         </div>
