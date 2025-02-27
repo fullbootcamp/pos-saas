@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import DashboardLayout from '../components/DashboardLayout';
-import DashboardHeader from '../components/DasboardHeader';
 import { BuildingStorefrontIcon, ArrowRightIcon, ShoppingCartIcon, TagIcon, TruckIcon, CreditCardIcon, ReceiptRefundIcon, DocumentTextIcon, UserGroupIcon, ChatBubbleLeftIcon, WrenchIcon, StarIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
-
+import { MoonIcon, SunIcon } from '@heroicons/react/24/outline';
 
 interface Subscription {
   planName: string;
@@ -43,6 +41,8 @@ const Dashboard: React.FC = () => {
   const [displaySlug, setDisplaySlug] = useState<string>('Unnamed Store');
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
 
   const fetchUserData = useCallback(async () => {
     const token = localStorage.getItem('token');
@@ -99,11 +99,26 @@ const Dashboard: React.FC = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, [fetchUserData]);
 
+  // Close submenu on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
   };
 
-  if (loading) return <DashboardLayout><div className="text-center mt-8 text-gray-600">Loading...</div></DashboardLayout>;
+  if (loading) return (
+    <div className="flex flex-col h-screen w-screen bg-[#DDE6ED] dark:bg-[#2D3748] text-gray-800 dark:text-gray-200">
+      <div className="text-center mt-8 text-gray-600">Loading...</div>
+    </div>
+  );
 
   const themeClass = isDarkMode ? 'dark' : 'light';
   const initial = userData?.userName ? userData.userName.charAt(0).toUpperCase() : 'U';
@@ -138,7 +153,7 @@ const Dashboard: React.FC = () => {
     switch (path) {
       case 'store-overview':
         return (
-          <div>
+          <div className="p-6">
             <h3 className={`text-lg font-medium ${themeClass === 'dark' ? 'text-gray-200' : 'text-gray-700'} mb-2`}>Store Overview</h3>
             <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${themeClass === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
@@ -154,7 +169,7 @@ const Dashboard: React.FC = () => {
         );
       case 'sales':
         return (
-          <div>
+          <div className="p-6">
             <h3 className={`text-lg font-medium ${themeClass === 'dark' ? 'text-gray-200' : 'text-gray-700'} mb-2`}>Sales</h3>
             {/* Sales Graph */}
             <div className={`bg-white ${themeClass === 'dark' ? 'bg-gray-800' : 'bg-white'} p-4 rounded-lg shadow-md mb-6`}>
@@ -231,7 +246,7 @@ const Dashboard: React.FC = () => {
         );
       default:
         return (
-          <div>
+          <div className="p-6">
             <h3 className={`text-lg font-medium ${themeClass === 'dark' ? 'text-gray-200' : 'text-gray-700'} mb-2`}>Store Overview</h3>
             <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${themeClass === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
@@ -249,147 +264,192 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <DashboardLayout>
-      <DashboardHeader initial={initial} isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
-      <nav className="space-y-3">
-        <motion.button
-          onClick={() => navigate(`/dashboard/${displaySlug}`)}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <BuildingStorefrontIcon className="h-5 w-5 mr-2" />
-          <span>Store Overview</span>
-        </motion.button>
-        <motion.button
-          onClick={() => navigate(`/pos/${displaySlug}`)}
-          className={`w-full text-left py-2 px-4 bg-[#76ABAE] hover:bg-teal-600 rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <ArrowRightIcon className="h-5 w-5 mr-2" />
-          <span>POS</span>
-        </motion.button>
-        <motion.button
-          onClick={() => navigate('/sales')}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <ShoppingCartIcon className="h-5 w-5 mr-2" />
-          <span>Sales</span>
-        </motion.button>
-        <motion.button
-          onClick={() => console.log('Products clicked')}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <TagIcon className="h-5 w-5 mr-2" />
-          <span>Products</span>
-        </motion.button>
-        <motion.button
-          onClick={() => console.log('Services clicked')}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <TruckIcon className="h-5 w-5 mr-2" />
-          <span>Services</span>
-        </motion.button>
-        <motion.button
-          onClick={() => console.log('Categories clicked')}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <TagIcon className="h-5 w-5 mr-2" />
-          <span>Categories</span>
-        </motion.button>
-        <motion.button
-          onClick={() => console.log('Suppliers clicked')}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <TruckIcon className="h-5 w-5 mr-2" />
-          <span>Suppliers</span>
-        </motion.button>
-        <motion.button
-          onClick={() => console.log('Purchases clicked')}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <CreditCardIcon className="h-5 w-5 mr-2" />
-          <span>Purchases</span>
-        </motion.button>
-        <motion.button
-          onClick={() => console.log('Refunds clicked')}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <ReceiptRefundIcon className="h-5 w-5 mr-2" />
-          <span>Refunds</span>
-        </motion.button>
-        <motion.button
-          onClick={() => console.log('Inventory clicked')}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <TagIcon className="h-5 w-5 mr-2" />
-          <span>Inventory</span>
-        </motion.button>
-        <motion.button
-          onClick={() => console.log('Reports clicked')}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <DocumentTextIcon className="h-5 w-5 mr-2" />
-          <span>Reports</span>
-        </motion.button>
-        <motion.button
-          onClick={() => console.log('AI Insights clicked')}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <ChatBubbleLeftIcon className="h-5 w-5 mr-2" />
-          <span>AI Insights</span>
-        </motion.button>
-        <motion.button
-          onClick={() => console.log('Loyalty Programs clicked')}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <StarIcon className="h-5 w-5 mr-2" />
-          <span>Loyalty Programs</span>
-        </motion.button>
-        <motion.button
-          onClick={() => console.log('Custom Workflows clicked')}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <WrenchIcon className="h-5 w-5 mr-2" />
-          <span>Custom Workflows</span>
-        </motion.button>
-        <motion.button
-          onClick={() => console.log('Multi-Location Sync clicked')}
-          className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <UserGroupIcon className="h-5 w-5 mr-2" />
-          <span>Multi-Location Sync</span>
-        </motion.button>
-      </nav>
-      {getContent()}
-    </DashboardLayout>
+    <div className="flex flex-col h-screen w-screen bg-[#DDE6ED] dark:bg-[#2D3748] text-gray-800 dark:text-gray-200">
+      <div ref={headerRef} className="p-4 flex justify-between items-center bg-gray-100 dark:bg-gray-800 shadow-md">
+        <div className="text-lg font-bold">Logo</div>
+        <div className="flex items-center space-x-4">
+          <motion.button
+            className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-lg font-medium"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            {initial}
+          </motion.button>
+          {isMenuOpen && (
+            <div className="absolute right-4 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-50">
+              <button className="w-full text-left px-2 py-1 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" onClick={() => console.log('Profile Settings')}>
+                Profile Settings
+              </button>
+              <button className="w-full text-left px-2 py-1 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" onClick={() => console.log('Billing')}>
+                Billing
+              </button>
+              <button className="w-full text-left px-2 py-1 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" onClick={() => console.log('Sign Out')}>
+                Sign Out
+              </button>
+            </div>
+          )}
+          <motion.button
+            onClick={toggleDarkMode}
+            className={`p-2 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            {isDarkMode ? <SunIcon className="h-6 w-6 text-yellow-300" /> : <MoonIcon className="h-6 w-6 text-gray-700" />}
+          </motion.button>
+        </div>
+      </div>
+      <div className="flex flex-1 overflow-hidden w-full">
+        <aside className="bg-gray-800 text-white p-6 w-72 flex-shrink-0 flex flex-col space-y-6 overflow-y-auto">
+          <h3 className="text-xl font-semibold border-gray-600 pb-2 border-b">Store Menu</h3>
+          <nav className="space-y-3">
+            <motion.button
+              onClick={() => navigate(`/dashboard/${displaySlug}`)}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <BuildingStorefrontIcon className="h-5 w-5 mr-2" />
+              <span>Store Overview</span>
+            </motion.button>
+            <motion.button
+              onClick={() => navigate(`/pos/${displaySlug}`)}
+              className={`w-full text-left py-2 px-4 bg-[#76ABAE] hover:bg-teal-600 rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ArrowRightIcon className="h-5 w-5 mr-2" />
+              <span>POS</span>
+            </motion.button>
+            <motion.button
+              onClick={() => navigate('/sales')}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ShoppingCartIcon className="h-5 w-5 mr-2" />
+              <span>Sales</span>
+            </motion.button>
+            <motion.button
+              onClick={() => console.log('Products clicked')}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <TagIcon className="h-5 w-5 mr-2" />
+              <span>Products</span>
+            </motion.button>
+            <motion.button
+              onClick={() => console.log('Services clicked')}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <TruckIcon className="h-5 w-5 mr-2" />
+              <span>Services</span>
+            </motion.button>
+            <motion.button
+              onClick={() => console.log('Categories clicked')}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <TagIcon className="h-5 w-5 mr-2" />
+              <span>Categories</span>
+            </motion.button>
+            <motion.button
+              onClick={() => console.log('Suppliers clicked')}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <TruckIcon className="h-5 w-5 mr-2" />
+              <span>Suppliers</span>
+            </motion.button>
+            <motion.button
+              onClick={() => console.log('Purchases clicked')}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <CreditCardIcon className="h-5 w-5 mr-2" />
+              <span>Purchases</span>
+            </motion.button>
+            <motion.button
+              onClick={() => console.log('Refunds clicked')}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ReceiptRefundIcon className="h-5 w-5 mr-2" />
+              <span>Refunds</span>
+            </motion.button>
+            <motion.button
+              onClick={() => console.log('Inventory clicked')}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <TagIcon className="h-5 w-5 mr-2" />
+              <span>Inventory</span>
+            </motion.button>
+            <motion.button
+              onClick={() => console.log('Reports clicked')}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <DocumentTextIcon className="h-5 w-5 mr-2" />
+              <span>Reports</span>
+            </motion.button>
+            <motion.button
+              onClick={() => console.log('AI Insights clicked')}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ChatBubbleLeftIcon className="h-5 w-5 mr-2" />
+              <span>AI Insights</span>
+            </motion.button>
+            <motion.button
+              onClick={() => console.log('Loyalty Programs clicked')}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <StarIcon className="h-5 w-5 mr-2" />
+              <span>Loyalty Programs</span>
+            </motion.button>
+            <motion.button
+              onClick={() => console.log('Custom Workflows clicked')}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <WrenchIcon className="h-5 w-5 mr-2" />
+              <span>Custom Workflows</span>
+            </motion.button>
+            <motion.button
+              onClick={() => console.log('Multi-Location Sync clicked')}
+              className={`w-full text-left py-2 px-4 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-md transition-all duration-300 flex items-center`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <UserGroupIcon className="h-5 w-5 mr-2" />
+              <span>Multi-Location Sync</span>
+            </motion.button>
+          </nav>
+        </aside>
+        <main className="flex-1 p-6 overflow-auto">
+          {getContent()}
+        </main>
+        <div className="p-6 flex justify-end">
+          <button className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded">
+            Help?
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

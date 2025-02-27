@@ -18,7 +18,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           <h3 className="text-xl font-semibold border-gray-600 pb-2 border-b">Store Menu</h3>
           {children}
         </aside>
-        {/* Main Content and Right Panel */}
+        {/* Main Content */}
         <div className="flex-1 flex flex-col w-full">
           <main className="flex-1 p-6 overflow-auto">
             <Outlet /> {/* Dynamic content based on route */}
