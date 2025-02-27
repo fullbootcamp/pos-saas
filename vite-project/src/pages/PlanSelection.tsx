@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { BuildingStorefrontIcon } from '@heroicons/react/24/solid'; // Removed CheckCircleIcon
+import { BuildingStorefrontIcon } from '@heroicons/react/24/solid'; // Removed unused CheckCircleIcon
 import { motion } from 'framer-motion'; // Ensure framer-motion is installed
 
 const PlanSelection: React.FC = () => {
@@ -54,7 +54,7 @@ const PlanSelection: React.FC = () => {
     ? allPlans.filter(plan => plan.id === 3) // Show Yearly if on Monthly
     : allPlans; // Show all plans if no current plan
 
-  const handlePlanSelect = async (planId: number) => {
+  const handlePlanSelect = async (planId: number) => { // Removed unused 'plan' parameter
     setIsSelecting(true);
     setMessage('');
     const token = localStorage.getItem('token');
@@ -83,7 +83,6 @@ const PlanSelection: React.FC = () => {
 
       if (response.status === 201) {
         setMessage('Plan selected successfully!');
-        const plan = allPlans.find(p => p.id === planId);
         if (planId === 1) { // Free Demo
           setTimeout(() => navigate(`/dashboard/${storeSlug}`), 2000);
         } else { // Paid plans (Monthly or Yearly)

@@ -1,8 +1,10 @@
-// File: src/pages/Dashboard.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Layout from '../components/Layout';
+import { BuildingStorefrontIcon, ArrowRightIcon } from '@heroicons/react/24/solid'; // Solid icons
+import { ArrowLeftOnRectangleIcon, MoonIcon, SunIcon } from '@heroicons/react/24/outline'; // Removed UserIcon, kept relevant icons
+import { motion } from 'framer-motion'; // Ensure framer-motion is installed
 
 interface Subscription {
   planName: string;
@@ -24,6 +26,7 @@ interface Status {
   planId?: number;
   trial_ends_at?: string;
   subscription_ends_at?: string;
+  storeName?: string;
 }
 
 const Dashboard: React.FC = () => {
@@ -31,15 +34,19 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState<Status | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  const [passwordMessage, setPasswordMessage] = useState('');
+  const isMounted = useRef(false);
+  const [storedSlug, setStoredSlug] = useState<string | null>(localStorage.getItem('storeSlug'));
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      if (!isMounted.current) {
+        isMounted.current = true;
+        navigate('/login');
+      }
+      return;
+    }
 
     try {
       const response = await axios.get<{ status: Status }>('http://localhost:5000/api/status', {
@@ -48,7 +55,8 @@ const Dashboard: React.FC = () => {
       console.log('Dashboard fetch response:', response.data);
       setUserData(response.data.status);
 
-      if (!response.data.status.dashboardCreated) {
+      if (!response.data.status.dashboardCreated && slug === storedSlug && !isMounted.current) {
+        isMounted.current = true;
         await axios.post('http://localhost:5000/api/update-dashboard-created', {}, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -62,157 +70,148 @@ const Dashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate, slug, storedSlug]);
 
   useEffect(() => {
+    isMounted.current = true;
     fetchUserData();
-  }, []);
+    setStoredSlug(localStorage.getItem('storeSlug'));
+  }, [slug, fetchUserData]);
+
+  useEffect(() => {
+    if (slug !== storedSlug && isMounted.current) {
+      navigate(`/dashboard/${storedSlug || 'default'}`);
+    }
+  }, [slug, navigate, storedSlug]);
 
   useEffect(() => {
     const handleFocus = () => fetchUserData();
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, []);
+  }, [fetchUserData]);
 
-  const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (newPassword !== confirmNewPassword) {
-      setPasswordMessage('New passwords do not match.');
-      return;
-    }
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setPasswordMessage('Not authenticated. Please log in again.');
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        'http://localhost:5000/update-password',
-        { currentPassword, newPassword },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setPasswordMessage(response.data.message);
-      setShowPasswordForm(false);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmNewPassword('');
-      setTimeout(() => setPasswordMessage(''), 5000);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        setPasswordMessage(error.response?.data?.message || 'Error updating password.');
-      } else {
-        setPasswordMessage('An unexpected error occurred.');
-      }
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('storeSlug');
+    navigate('/login');
   };
 
-  if (loading) return <Layout title="Dashboard"><div>Loading...</div></Layout>;
+  const handleProfileSettings = () => {
+    console.log('Navigate to Profile Settings');
+    // navigate('/profile-settings'); // Uncomment and define route when ready
+  };
 
-  const subEnds = userData?.subscription_ends_at ? new Date(userData.subscription_ends_at) : null;
-  const trialEnds = userData?.trial_ends_at && !subEnds ? new Date(userData.trial_ends_at) : null;
-  const expiryDate = subEnds || trialEnds;
-  const daysLeft = expiryDate ? Math.max(0, Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : 0;
-  const isYearly = userData?.planId === 3;
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  if (loading) return <Layout title="Dashboard"><div className="text-center mt-8 text-gray-600">Loading...</div></Layout>;
+
+  const displaySlug = slug || storedSlug || userData?.storeName || 'Unnamed Store';
+  const themeClass = isDarkMode ? 'dark' : 'light';
+  const initial = userData?.userName ? userData.userName.charAt(0).toUpperCase() : 'U';
 
   return (
-    <Layout title={`Dashboard - ${slug}`}>
-      <div className="flex-1 max-w-7xl mx-auto px-4 py-6">
-        <h1 className="text-4xl font-bold text-gray-800 mb-6 text-center">
-          Welcome to Your {slug} Dashboard, {userData?.userName || 'User'}!
-        </h1>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-2xl p-6">
-            <h2 className="text-2xl font-semibold text-gray-800">Plan Status</h2>
-            <p className="text-gray-600 mt-2">
-              {userData?.subscription?.planName || 'Free Demo'}
-            </p>
-            <p className="text-gray-600 mt-1">
-              {daysLeft > 0 ? `Expires in ${daysLeft} days` : 'Expired'}
-            </p>
-            {!isYearly && (
-              <button
-                onClick={() => navigate('/plan-selection')}
-                className="mt-4 w-full py-3 px-6 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-all duration-300 text-lg"
+    <Layout title={`${displaySlug} Dashboard`}>
+      <div className={`flex flex-col h-screen ${themeClass === 'dark' ? 'bg-gray-900 text-gray-200' : 'bg-gray-100 text-gray-800'}`}>
+        {/* Top Menubar */}
+        <div className={`flex items-center justify-between p-4 ${themeClass === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-md`}>
+          <div className="flex items-center space-x-2">
+            <span className="text-xl font-semibold">POS SaaS</span>
+          </div>
+          <div className="flex items-center space-x-4">
+            <motion.button
+              onClick={toggleDarkMode}
+              className={`p-2 rounded-full ${themeClass === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              {isDarkMode ? <SunIcon className="h-6 w-6 text-yellow-300" /> : <MoonIcon className="h-6 w-6 text-gray-700" />}
+            </motion.button>
+            <div className="relative">
+              <motion.button
+                onClick={handleProfileSettings}
+                className={`w-10 h-10 rounded-full ${themeClass === 'dark' ? 'bg-gray-700' : 'bg-gray-300'} flex items-center justify-center text-lg font-medium`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
               >
-                Upgrade Plan
-              </button>
-            )}
-          </div>
-          <div className="bg-white rounded-lg shadow-2xl p-6">
-            <h2 className="text-2xl font-semibold text-gray-800">Store Details</h2>
-            <p className="text-gray-600 mt-2">Name: {slug}</p>
-            <p className="text-gray-600">Type: {userData?.storeSetup ? 'Active' : 'Pending'}</p>
-            <button
-              onClick={() => navigate(`/pos/${slug}`)}
-              className="mt-4 w-full py-3 px-6 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-all duration-300 text-lg"
-            >
-              Launch POS
-            </button>
-          </div>
-          <div className="bg-white rounded-lg shadow-2xl p-6">
-            <h2 className="text-2xl font-semibold text-gray-800">Account Settings</h2>
-            <button
-              onClick={() => setShowPasswordForm(!showPasswordForm)}
-              className="mt-4 w-full py-3 px-6 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-all duration-300 text-lg"
-            >
-              {showPasswordForm ? 'Cancel' : 'Update Password'}
-            </button>
-            {showPasswordForm && (
-              <form onSubmit={handleUpdatePassword} className="mt-4 space-y-4">
-                <div>
-                  <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
-                    Current Password
-                  </label>
-                  <input
-                    type="password"
-                    id="currentPassword"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
-                    New Password
-                  </label>
-                  <input
-                    type="password"
-                    id="newPassword"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="confirmNewPassword" className="block text-sm font-medium text-gray-700">
-                    Confirm New Password
-                  </label>
-                  <input
-                    type="password"
-                    id="confirmNewPassword"
-                    value={confirmNewPassword}
-                    onChange={(e) => setConfirmNewPassword(e.target.value)}
-                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
+                {initial}
+              </motion.button>
+              <motion.div
+                className={`absolute right-0 mt-2 w-48 ${themeClass === 'dark' ? 'bg-gray-700' : 'bg-white'} rounded-md shadow-lg py-1 hidden group-hover:block`}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <motion.button
+                  onClick={handleProfileSettings}
+                  className={`w-full text-left px-4 py-2 text-sm ${themeClass === 'dark' ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'} rounded-t-md`}
+                  whileHover={{ backgroundColor: themeClass === 'dark' ? '#4B5563' : '#F3F4F6' }}
                 >
-                  Save New Password
-                </button>
-              </form>
-            )}
-            {passwordMessage && (
-              <p className="mt-2 text-center text-sm text-red-600">{passwordMessage}</p>
-            )}
+                  Profile Settings
+                </motion.button>
+                <motion.button
+                  onClick={handleLogout}
+                  className={`w-full text-left px-4 py-2 text-sm ${themeClass === 'dark' ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'} rounded-b-md`}
+                  whileHover={{ backgroundColor: themeClass === 'dark' ? '#4B5563' : '#F3F4F6' }}
+                >
+                  <ArrowLeftOnRectangleIcon className="h-5 w-5 mr-2 inline" /> Sign Out
+                </motion.button>
+              </motion.div>
+            </div>
           </div>
+        </div>
+
+        {/* Main Layout */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left Pane for Store Settings and Navigation */}
+          <aside className={`w-72 ${themeClass === 'dark' ? 'bg-gray-800' : 'bg-gray-800'} text-white p-8 flex flex-col space-y-8 border-t-0`}>
+            <h3 className={`text-2xl font-semibold ${themeClass === 'dark' ? 'border-gray-700' : 'border-gray-600'} pb-4 border-b`}>Store Menu</h3>
+            <nav className="space-y-4">
+              <motion.button
+                onClick={() => navigate(`/dashboard/${displaySlug}`)}
+                className={`w-full text-left py-3 px-6 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-lg transition-all duration-300 flex items-center`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <BuildingStorefrontIcon className="h-6 w-6 mr-3" />
+                <span className="text-lg">Store Overview</span>
+              </motion.button>
+              <motion.button
+                onClick={() => navigate(`/pos/${displaySlug}`)}
+                className={`w-full text-left py-3 px-6 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-lg transition-all duration-300 flex items-center`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <ArrowRightIcon className="h-6 w-6 mr-3" />
+                <span className="text-lg">Launch POS</span>
+              </motion.button>
+              <motion.button
+                onClick={() => console.log('Plan Status clicked')} // Placeholder
+                className={`w-full text-left py-3 px-6 ${themeClass === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-lg transition-all duration-300 flex items-center`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <span className="text-lg">Plan Status</span>
+              </motion.button>
+            </nav>
+          </aside>
+
+          {/* Main Content Area */}
+          <main className={`flex-1 p-8 ${themeClass === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+            <h2 className={`text-3xl font-semibold ${themeClass === 'dark' ? 'text-white' : 'text-gray-800'} mb-6`}>Dashboard Content</h2>
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${themeClass === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+              <div className={`bg-white ${themeClass === 'dark' ? 'bg-gray-800' : 'bg-white'} p-6 rounded-lg shadow-md`}>
+                <h3 className={`text-xl font-medium ${themeClass === 'dark' ? 'text-gray-200' : 'text-gray-700'} mb-2`}>Store Info</h3>
+                <p>Name: {displaySlug}</p>
+                <p>Status: {userData?.storeSetup ? 'Active' : 'Pending'}</p>
+              </div>
+              <div className={`bg-white ${themeClass === 'dark' ? 'bg-gray-800' : 'bg-white'} p-6 rounded-lg shadow-md`}>
+                <h3 className={`text-xl font-medium ${themeClass === 'dark' ? 'text-gray-200' : 'text-gray-700'} mb-2`}>Upcoming Features</h3>
+                <p>Analytics, Inventory, Reports - Coming Soon!</p>
+              </div>
+            </div>
+          </main>
         </div>
       </div>
     </Layout>
