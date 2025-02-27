@@ -464,9 +464,9 @@ const Landing: React.FC = () => {
               >
                 <h3 className="text-2xl font-semibold text-gray-800 flex items-center space-x-4">
                   <QuestionMarkCircleIcon className="h-10 w-10 text-purple-600" />
-                  <span>Is it free to try?</span>
+                  <span>Is it compatible with my iPhone, iPad, tablet, Windows, or Android?</span>
                 </h3>
-                <p className="text-gray-600 mt-4 text-lg">Yes, our 7-day demo is free with no credit card required.</p>
+                <p className="text-gray-600 mt-4 text-lg">Absolutely! Our cloud-based POS solution is accessible via any modern web browser on iPhone, iPad, tablets, Windows, or Android devices, offering a seamless experience on any touch-enabled platform.</p>
               </motion.div>
               <motion.div
                 className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
@@ -475,9 +475,9 @@ const Landing: React.FC = () => {
               >
                 <h3 className="text-2xl font-semibold text-gray-800 flex items-center space-x-4">
                   <QuestionMarkCircleIcon className="h-10 w-10 text-purple-600" />
-                  <span>What devices are supported?</span>
+                  <span>Which hardware or equipment do I need for your POS cloud software?</span>
                 </h3>
-                <p className="text-gray-600 mt-4 text-lg">Works on any touchscreen device—tablets, laptops, or POS terminals.</p>
+                <p className="text-gray-600 mt-4 text-lg">Your current equipment may already work if you’re an established business—visit our <a href="/resources" className="text-purple-600 underline">Resources page</a> for equipment demos and tutorials. For new stores or upgrades, explore our <a href="/shop" className="text-purple-600 underline">Shop</a> for compatible hardware, guaranteed to boost sales and enhance customer experience.</p>
               </motion.div>
               <motion.div
                 className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
@@ -486,9 +486,9 @@ const Landing: React.FC = () => {
               >
                 <h3 className="text-2xl font-semibold text-gray-800 flex items-center space-x-4">
                   <QuestionMarkCircleIcon className="h-10 w-10 text-purple-600" />
-                  <span>Are there additional fees?</span>
+                  <span>How often are updates released, powered by AI GROK?</span>
                 </h3>
-                <p className="text-gray-600 mt-4 text-lg">No additional fees; includes a full license with updates.</p>
+                <p className="text-gray-600 mt-4 text-lg">Our AI, powered by GROK, delivers timely updates based on valuable client feedback, ensuring you benefit from the latest technology and an optimized experience.</p>
               </motion.div>
               <motion.div
                 className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
@@ -497,9 +497,9 @@ const Landing: React.FC = () => {
               >
                 <h3 className="text-2xl font-semibold text-gray-800 flex items-center space-x-4">
                   <QuestionMarkCircleIcon className="h-10 w-10 text-purple-600" />
-                  <span>Is training available?</span>
+                  <span>Is there a contract if I sign up for one of your plans?</span>
                 </h3>
-                <p className="text-gray-600 mt-4 text-lg">Yes, we provide a guide, online tutorials, and 24/7 email/phone support.</p>
+                <p className="text-gray-600 mt-4 text-lg">No contracts, no gimmicks! Enjoy the flexibility to cancel anytime. Try our 7-day FREE demo, test it for 30 days at just $19.99, or save 50% with our Yearly plan—whichever you choose, you’re set to win!</p>
               </motion.div>
               <motion.div
                 className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
@@ -508,9 +508,9 @@ const Landing: React.FC = () => {
               >
                 <h3 className="text-2xl font-semibold text-gray-800 flex items-center space-x-4">
                   <QuestionMarkCircleIcon className="h-10 w-10 text-purple-600" />
-                  <span>Can I manage inventory and discounts?</span>
+                  <span>What kind of support and training do you offer?</span>
                 </h3>
-                <p className="text-gray-600 mt-4 text-lg">Yes, track inventory, process sales/returns, and create custom discounts.</p>
+                <p className="text-gray-600 mt-4 text-lg">Our top-tier customer service team provides robust support through an efficient ticketing system, with prompt responses. Stay connected via our active social media channels for tutorials, tips, and tricks you won’t want to miss—follow us today!</p>
               </motion.div>
               <motion.div
                 className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
@@ -519,9 +519,9 @@ const Landing: React.FC = () => {
               >
                 <h3 className="text-2xl font-semibold text-gray-800 flex items-center space-x-4">
                   <QuestionMarkCircleIcon className="h-10 w-10 text-purple-600" />
-                  <span>Does it include software?</span>
+                  <span>What about additional costs or optional features?</span>
                 </h3>
-                <p className="text-gray-600 mt-4 text-lg">Yes, the software is included with a full license.</p>
+                <p className="text-gray-600 mt-4 text-lg">We pride ourselves on being among the most affordable in the industry without compromising quality. Enhance your experience with optional features, modules, and add-ons tailored to your store’s unique needs.</p>
               </motion.div>
               <motion.div
                 className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
@@ -530,42 +530,9 @@ const Landing: React.FC = () => {
               >
                 <h3 className="text-2xl font-semibold text-gray-800 flex items-center space-x-4">
                   <QuestionMarkCircleIcon className="h-10 w-10 text-purple-600" />
-                  <span>How often are updates released?</span>
+                  <span>Can this be installed on my computer, or do I require internet?</span>
                 </h3>
-                <p className="text-gray-600 mt-4 text-lg">Updates are released approximately once a year with new features.</p>
-              </motion.div>
-              <motion.div
-                className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
-                variants={buttonVariants}
-                whileHover="hover"
-              >
-                <h3 className="text-2xl font-semibold text-gray-800 flex items-center space-x-4">
-                  <QuestionMarkCircleIcon className="h-10 w-10 text-purple-600" />
-                  <span>Is there a warranty?</span>
-                </h3>
-                <p className="text-gray-600 mt-4 text-lg">Yes, we offer a 3-month warranty with free exchanges for faulty items.</p>
-              </motion.div>
-              <motion.div
-                className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
-                variants={buttonVariants}
-                whileHover="hover"
-              >
-                <h3 className="text-2xl font-semibold text-gray-800 flex items-center space-x-4">
-                  <QuestionMarkCircleIcon className="h-10 w-10 text-purple-600" />
-                  <span>Can I import/export data?</span>
-                </h3>
-                <p className="text-gray-600 mt-4 text-lg">Yes, import/export inventory data using Excel files.</p>
-              </motion.div>
-              <motion.div
-                className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
-                variants={buttonVariants}
-                whileHover="hover"
-              >
-                <h3 className="text-2xl font-semibold text-gray-800 flex items-center space-x-4">
-                  <QuestionMarkCircleIcon className="h-10 w-10 text-purple-600" />
-                  <span>Is it compatible with QuickBooks?</span>
-                </h3>
-                <p className="text-gray-600 mt-4 text-lg">Currently not compatible, but we offer robust in-house reporting.</p>
+                <p className="text-gray-600 mt-4 text-lg">Our innovative cloud solution empowers your business with remote access from anywhere—whether you’re in-store or visiting clients—delivering a flexible, internet-based POS system tailored to your needs.</p>
               </motion.div>
             </div>
           </div>
