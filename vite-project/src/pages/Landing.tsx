@@ -502,16 +502,50 @@ const Landing: React.FC = () => {
                 <p className="text-gray-600 mt-4 text-lg">No contracts, no gimmicks! Enjoy the flexibility to cancel anytime. Try our 7-day FREE demo, test it for 30 days at just $19.99, or save 50% with our Yearly plan—whichever you choose, you’re set to win!</p>
               </motion.div>
               <motion.div
-                className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
-                variants={buttonVariants}
-                whileHover="hover"
-              >
-                <h3 className="text-2xl font-semibold text-gray-800 flex items-center space-x-4">
-                  <QuestionMarkCircleIcon className="h-10 w-10 text-purple-600" />
-                  <span>What kind of support and training do you offer?</span>
-                </h3>
-                <p className="text-gray-600 mt-4 text-lg">Our top-tier customer service team provides robust support through an efficient ticketing system, with prompt responses. Stay connected via our active social media channels for tutorials, tips, and tricks you won’t want to miss—follow us today!</p>
-              </motion.div>
+  className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
+  variants={buttonVariants}
+  whileHover="hover"
+>
+  <h3 className="text-2xl font-semibold text-gray-800 flex items-center space-x-4">
+    <QuestionMarkCircleIcon className="h-10 w-10 text-purple-600" />
+    <span>What kind of support and training do you offer?</span>
+  </h3>
+  <p className="text-gray-600 mt-4 text-lg">Our top-tier customer service team provides robust support through an efficient ticketing system, with prompt responses. Stay connected via our active social media channels for tutorials, tips, and tricks you won’t want to miss—follow us today! 
+    <div className="flex space-x-4 mt-2">
+      <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M22.676 0H1.324C.593 0 0 .593 0 1.324v21.352C0 23.407.593 24 1.324 24h11.494v-9.294H9.689v-3.621h3.129V8.41c0-3.099 1.894-4.785 4.659-4.785 1.325 0 2.464.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.621h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.324V1.324C24 .593 23.407 0 22.676 0z"/>
+        </svg>
+      </a>
+      <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-800">
+        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+        </svg>
+      </a>
+      <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-900">
+        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-1.337-.255-2.453-1.763-2.453-1.612 0-2.237 1.208-2.237 2.541v5.516h-3v-11h2.881v1.581h.041c.395-.746 1.273-1.763 2.765-1.763 2.766 0 3.257 1.851 3.257 4.266v6.117z"/>
+        </svg>
+      </a>
+      <a href="https://www.x.com" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-gray-900">
+        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+      </a>
+      <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:text-pink-800">
+        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.233.308 2.686.644.52.354.972.783 1.39 1.201.419.418.847.869 1.201 1.39.336.453.582 1.32.644 2.686.058 1.265.069 1.646.069 4.85s-.012 3.584-.069 4.85c-.062 1.366-.308 2.233-.644 2.686-.354.52-.783.972-1.201 1.39-.418.419-.869.847-1.39 1.201-.453.336-1.32.582-2.686.644-1.265.058-1.646.069-4.85.069s-3.584-.012-4.85-.069c-1.366-.062-2.233-.308-2.686-.644-.52-.354-.972-.783-1.39-1.201-.418-.419-.847-.869-1.201-1.39-.336-.453-.582-1.32-.644-2.686-.058-1.265-.069-1.646-.069-4.85s.012-3.584.069-4.85c.062-1.366.308-2.233.644-2.686.354-.52.783-.972 1.201-1.39.419-.418.869-.847 1.39-1.201.453-.336 1.32-.582 2.686-.644 1.265-.058 1.646-.069 4.85-.069zm0-2.163c-3.259 0-3.67.014-4.947.072-1.254.057-2.08.203-2.812.434-.734.231-1.352.53-1.977 1.165-.625.635-.934 1.243-1.165 1.977-.231.732-.377 1.558-.434 2.812-.058 1.277-.072 1.687-.072 4.947s.014 3.67.072 4.947c.057 1.254.203 2.08.434 2.812.231.734.53 1.352 1.165 1.977.635.625 1.243.934 1.977 1.165.732.231 1.558.377 2.812.434 1.277.058 1.687.072 4.947.072s3.67-.014 4.947-.072c1.254-.057 2.08-.203 2.812-.434.734-.231 1.352-.53 1.977-1.165.625-.635.934-1.243 1.165-1.977.231-.732.377-1.558.434-2.812.058-1.277.072-1.687.072-4.947s-.014-3.67-.072-4.947c-.057-1.254-.203-2.08-.434-2.812-.231-.734-.53-1.352-1.165-1.977-.635-.625-1.243-.934-1.977-1.165-.732-.231-1.558-.377-2.812-.434-1.277-.058-1.687-.072-4.947-.072zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.792-4-4s1.791-4 4-4 4 1.792 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441-.645-1.441-1.44s.645-1.44 1.441-1.44c.796 0 1.441.645 1.441 1.44s-.645 1.44-1.441 1.44z"/>
+        </svg>
+      </a>
+      <a href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer" className="text-black hover:text-gray-600">
+        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12.5303 2.66669C12.882 2.66669 13.2172 2.73777 13.5303 2.87502V6.37502C13.2172 6.23777 12.882 6.16669 12.5303 6.16669C10.2921 6.16669 8.36363 8.09517 8.36363 10.3334V13.4167H11.2727L10.9091 17H8.36363V21H5.45455V10.3334C5.45455 7.02161 8.21849 4.25767 11.5303 4.25767V2.66669Z"/>
+          <path d="M18.1818 8.58331V10.9999H15.2727V8.58331C15.2727 7.2451 16.5179 6.16669 17.9091 6.16669V4.25767C15.5973 4.25767 13.6364 6.21849 13.6364 8.58331V17C13.6364 18.5919 14.6503 19.9167 16 20.4167V18.4167C15.1924 18.1333 14.5455 17.4333 14.5455 16.5833V13.4167H17.9091V15.8333C17.9091 17.1715 16.6636 18.25 15.2727 18.25V20.25C17.5845 20.25 19.5455 18.2892 19.5455 15.9167V8.58331H18.1818Z"/>
+        </svg>
+      </a>
+    </div>
+  </p>
+</motion.div>
               <motion.div
                 className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
                 variants={buttonVariants}
