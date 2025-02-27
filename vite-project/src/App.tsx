@@ -9,11 +9,13 @@ import Register from './pages/Register'; // Assume this exists
 import ConfirmEmail from './pages/ConfirmEmail'; // Assume this exists
 import EmailVerified from './pages/EmailVerified'; // Assume this exists
 import StatusDashboard from './pages/StatusDashboard'; // Assume this exists
+import ChooseStoreType from './pages/ChooseStoreType'; // Import the updated file
+import PlanSelection from './pages/PlanSelection'; // Import the updated file
 import ProtectedRoute from './pages/ProtectedRoute'; // Import ProtectedRoute
 
 // Define placeholder components locally to avoid import conflicts
-const ChooseStoreType: React.FC = () => <div>Choose Store Type Page</div>;
-const PlanSelection: React.FC = () => <div>Plan Selection Page</div>;
+//const ChooseStoreType: React.FC = () => <div>Choose Store Type Page</div>;
+//const PlanSelection: React.FC = () => <div>Plan Selection Page</div>;
 const Payment: React.FC = () => <div>Payment Page</div>;
 const Dashboard: React.FC = () => <div>Dashboard Page</div>;
 
