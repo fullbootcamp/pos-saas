@@ -43,27 +43,63 @@ const sendVerificationEmail = async (to, subject, content, isHtml = false) => {
   };
   await transporter.sendMail(mailOptions);
 };
-
 const authenticate = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'No token provided' });
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Unauthorized: No token provided or invalid format' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  console.log('Verifying token:', token); // Debug token
 
   try {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    const [user] = await pool.query(
-      'SELECT id, name, email, role, email_verified_at, store_id, is_store_setup_complete, plan_id, trial_ends_at, is_dashboard_created FROM users WHERE id = ?', 
+    console.log('Decoded token:', decoded); // Debug decoded result
+    req.userId = decoded.id;
+
+    const [userRows] = await pool.query(
+      'SELECT id, name, email, role, email_verified_at, store_id, is_store_setup_complete, plan_id, trial_ends_at, is_dashboard_created FROM users WHERE id = ?',
       [decoded.id]
     );
-    if (user.length === 0) return res.status(401).json({ message: 'User not found' });
-    req.user = user[0];
-    console.log('Authenticated user:', req.user); // Debug
+    if (!userRows || userRows.length === 0) {
+      console.log('User not found for id:', decoded.id);
+      return res.status(404).json({ message: 'User not found' });
+    }
+    req.user = userRows[0];
+    console.log('Authenticated user:', req.user); // Debug user
+
+    // Allow minimal auth for status check
+    const allowedSetupRoutes = ['/api/status/status', '/stores', '/subscriptions', '/update-subscription-end', '/api/status'];
+    if (allowedSetupRoutes.includes(req.originalUrl)) {
+      console.log(`Allowing access to ${req.originalUrl} for user: ${req.user.id}`);
+      return next(); // Bypass full checks for status
+    }
+
+    // Dashboard-specific checks
+    if (req.user.email_verified_at && req.user.is_store_setup_complete && req.user.plan_id && req.user.is_dashboard_created) {
+      const [subscription] = await pool.query(
+        'SELECT ends_at FROM subscriptions WHERE user_id = ? ORDER BY ends_at DESC LIMIT 1',
+        [req.user.id]
+      );
+      const subscriptionEnd = subscription[0]?.ends_at ? new Date(subscription[0].ends_at) : null;
+      if (subscriptionEnd && subscriptionEnd < new Date()) {
+        console.log('Subscription expired for user:', req.user.id);
+        return res.status(403).json({ message: 'Subscription expired' });
+      }
+    } else {
+      console.log('User setup incomplete:', req.user);
+      return res.status(403).json({ message: 'User setup or subscription incomplete' });
+    }
+
     next();
   } catch (error) {
-    console.error('Auth error:', error);
-    res.status(401).json({ message: 'Invalid token' });
+    console.error('Authentication error:', error.message, error.stack);
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Unauthorized: Token expired, please log in again' });
+    }
+    return res.status(401).json({ message: 'Unauthorized: Invalid token' });
   }
 };
-
 // Auth Routes
 app.post('/api/auth/register', async (req, res) => {
   const { name, email, password } = req.body;

@@ -8,7 +8,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ themeClass, children }) => {
   return (
-    <aside className="bg-gray-800 text-white p-6 w-72 flex-shrink-0 flex flex-col space-y-6 overflow-y-auto" data-testid="sidebar">
+    <aside className={`p-6 w-72 flex-shrink-0 flex flex-col space-y-6 overflow-y-auto ${themeClass === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-200 text-gray-800'}`}>
       <SidebarTitle themeClass={themeClass} />
       <nav className="space-y-3">{children}</nav>
     </aside>

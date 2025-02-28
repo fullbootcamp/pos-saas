@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
+import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
-interface HelpProps {
-  onToggle?: (isOpen: boolean) => void;
-}
-
-const Help: React.FC<HelpProps> = ({ onToggle }) => {
+const Help: React.FC<{ onToggle?: (isOpen: boolean) => void }> = ({ onToggle }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleToggle = () => {
@@ -15,8 +12,9 @@ const Help: React.FC<HelpProps> = ({ onToggle }) => {
 
   return (
     <div>
-      <button onClick={handleToggle} className="p-2 bg-blue-500 text-white rounded">
-        Help
+      <button onClick={handleToggle} className="p-2 bg-purple-900 hover:bg-indigo-500 text-white rounded flex items-center">
+        <QuestionMarkCircleIcon className="h-5 w-5 mr-1" />
+        <span>Help</span>
       </button>
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
