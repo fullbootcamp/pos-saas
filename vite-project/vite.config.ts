@@ -1,6 +1,9 @@
+/// <reference types="vitest" /> // Explicitly include Vitest types
+// Adapted from https://vitest.dev/guide/
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { configDefaults } from 'vitest/config'; //important line
+import { configDefaults } from 'vitest/config';
+import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
@@ -14,8 +17,15 @@ export default defineConfig({
     },
   },
   test: {
-    globals: true,
+    globals: true, // Enables vi, describe, it, expect globally
     environment: 'jsdom',
-    exclude: [...configDefaults.exclude], //add this line
+    setupFiles: ['src/vitest.setup.ts'],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'src/__tests__/**/*.test.tsx'],
+    exclude: [...configDefaults.exclude, '**/node_modules/**', '**/dist/**'],
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+    },
   },
 });
