@@ -43,6 +43,7 @@ const Dashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
+  const dashboardRef = useRef<HTMLDivElement>(null);
 
   const fetchUserData = useCallback(async () => {
     const token = localStorage.getItem('token');
@@ -89,7 +90,12 @@ const Dashboard: React.FC = () => {
     if (slug !== storedSlug && isMounted.current) {
       navigate(`/dashboard/${storedSlug || 'default'}`);
     }
-    document.documentElement.classList.toggle('dark', isDarkMode);
+    // Apply dark mode to the entire document
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
   }, [slug, navigate, storedSlug, isDarkMode]);
 
@@ -99,10 +105,10 @@ const Dashboard: React.FC = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, [fetchUserData]);
 
-  // Close submenu on outside click
+  // Close submenu on outside click, excluding nav and header
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
+      if (dashboardRef.current && !dashboardRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
       }
     };
@@ -264,7 +270,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#DDE6ED] dark:bg-[#2D3748] text-gray-800 dark:text-gray-200">
+    <div ref={dashboardRef} className="flex flex-col h-screen w-screen bg-[#DDE6ED] dark:bg-[#2D3748] text-gray-800 dark:text-gray-200">
       <div ref={headerRef} className="p-4 flex justify-between items-center bg-gray-100 dark:bg-gray-800 shadow-md">
         <div className="text-lg font-bold">Logo</div>
         <div className="flex items-center space-x-4">
@@ -443,7 +449,7 @@ const Dashboard: React.FC = () => {
         <main className="flex-1 p-6 overflow-auto">
           {getContent()}
         </main>
-        <div className="p-6 flex justify-end">
+        <div className="p-2 flex justify-end">
           <button className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded">
             Help?
           </button>
