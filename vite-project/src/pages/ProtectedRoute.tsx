@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 interface ProtectedRouteProps {
@@ -12,15 +12,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireStoreS
   const [isStoreSetup, setIsStoreSetup] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const currentPath = window.location.pathname;
+  const navigate = useNavigate();
 
   useEffect(() => {
     let isMounted = true;
 
     const checkStatus = async () => {
       const token = localStorage.getItem('token');
-      console.log('Checking authentication with token:', token); // Debug token
+      console.log('Checking authentication with token:', token);
 
-      // Bypass authentication check for confirm-email and email-verified pages
       if (currentPath === '/confirm-email' || currentPath === '/email-verified') {
         if (isMounted) setIsLoading(false);
         return;
@@ -38,15 +38,26 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireStoreS
         const response = await axios.get('http://localhost:5000/api/status', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log('ProtectedRoute status response:', response.data); // Debug response
-        if (isMounted && response.data?.status) {
+
+        if (isMounted && response.data?.status && typeof response.data.status === 'object') {
+          console.log('ProtectedRoute status response:', response.data.status);
           setIsAuthenticated(true);
           setIsStoreSetup(!!response.data.status.storeSetup);
         } else {
+          console.error('Invalid status response:', response.data);
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error('ProtectedRoute error:', error.response?.data || error.message);
+        console.error('ProtectedRoute error:', error.response?.data?.message || error.message);
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          if (isMounted) {
+            setIsAuthenticated(false);
+            setIsLoading(false);
+            navigate('/login');
+          }
+          return;
+        }
         if (isMounted) setIsAuthenticated(false);
       } finally {
         if (isMounted) setIsLoading(false);
@@ -56,7 +67,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireStoreS
     checkStatus();
 
     return () => { isMounted = false; };
-  }, [currentPath]);
+  }, [currentPath, navigate]);
 
   if (isLoading) return <div className="text-center mt-8 text-gray-600">Loading...</div>;
 
@@ -65,7 +76,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireStoreS
     return <Navigate to="/login" replace />;
   }
 
-  if (requireStoreSetup && !isStoreSetup && !(currentPath === '/statusdashboard')) {
+  if (requireStoreSetup && !isStoreSetup && currentPath !== '/onboarding') {
     console.log('Redirecting to /choose-store-type due to missing store setup');
     return <Navigate to="/choose-store-type" replace />;
   }

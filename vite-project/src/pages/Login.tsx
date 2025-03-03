@@ -35,7 +35,7 @@ const Login: React.FC = () => {
       const { token, role, redirectTo } = response.data;
       localStorage.setItem('token', token);
       setMessage('Login successful! Redirecting...');
-      const destination = role === 'superadmin' ? '/superadmin-dashboard' : redirectTo || '/statusdashboard';
+      const destination = role === 'superadmin' ? '/superadmin-dashboard' : redirectTo || '/onboarding';
       setTimeout(() => navigate(destination), 2000);
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string }>;

@@ -3,18 +3,24 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { BuildingStorefrontIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
-import { motion } from 'framer-motion'; // Ensure framer-motion is installed
+import { motion } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 
 const ChooseStoreType: React.FC = () => {
   const [storeName, setStoreName] = useState('');
   const [storeType, setStoreType] = useState<'Retail' | 'Service' | 'Restaurant' | 'eCommerce' | 'Other'>('Retail');
+  const [locationCount, setLocationCount] = useState(1);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showStoreNameTooltip, setShowStoreNameTooltip] = useState(false);
+  const [showStoreTypeTooltip, setShowStoreTypeTooltip] = useState(false);
+  const [showLocationTooltip, setShowLocationTooltip] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!storeName || !storeType) {
+    if (!storeName || !storeType || !locationCount) {
       setMessage('Please fill out all fields.');
       return;
     }
@@ -31,7 +37,7 @@ const ChooseStoreType: React.FC = () => {
     try {
       const response = await axios.post(
         'http://localhost:5000/api/stores',
-        { name: storeName, type: storeType },
+        { name: storeName, type: storeType, locationCount },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -40,7 +46,7 @@ const ChooseStoreType: React.FC = () => {
       if (response.status === 201) {
         localStorage.setItem('storeSlug', response.data.slug); // Keep this for dashboard
         setMessage('Store created successfully!');
-        setTimeout(() => navigate('/status-dashboard'), 2000);
+        setTimeout(() => navigate('/planselection'), 2000); // Redirect to plan selection
       } else {
         setMessage('Unexpected response from the server. Please try again.');
       }
@@ -59,6 +65,8 @@ const ChooseStoreType: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  const isFormValid = storeName.trim() !== '' && storeType && locationCount > 0;
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -90,13 +98,29 @@ const ChooseStoreType: React.FC = () => {
             <p className="text-gray-600 mt-2">Select a store type and name to get started.</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Store Type Field */}
             <div>
-              <label htmlFor="storeType" className="block text-sm font-medium text-gray-700">Store Type</label>
+              <label htmlFor="storeType" className="block text-sm font-medium text-gray-700">
+                Store Type
+                <button
+                  type="button"
+                  className="ml-2 text-purple-600 hover:text-purple-800"
+                  onClick={() => setShowStoreTypeTooltip(!showStoreTypeTooltip)}
+                >
+                  <FontAwesomeIcon icon={faQuestionCircle} />
+                </button>
+              </label>
+              {showStoreTypeTooltip && (
+                <div className="mt-2 p-4 bg-purple-50 text-purple-800 rounded-lg">
+                  <p>Select the type of store you want to create (e.g., Retail, Restaurant).</p>
+                </div>
+              )}
               <select
                 id="storeType"
                 value={storeType}
                 onChange={(e) => setStoreType(e.target.value as 'Retail' | 'Service' | 'Restaurant' | 'eCommerce' | 'Other')}
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                required
               >
                 <option value="Retail">Retail</option>
                 <option value="Service">Service</option>
@@ -105,8 +129,24 @@ const ChooseStoreType: React.FC = () => {
                 <option value="Other">Other</option>
               </select>
             </div>
+
+            {/* Store Name Field */}
             <div>
-              <label htmlFor="storeName" className="block text-sm font-medium text-gray-700">Store Name</label>
+              <label htmlFor="storeName" className="block text-sm font-medium text-gray-700">
+                Store Name
+                <button
+                  type="button"
+                  className="ml-2 text-purple-600 hover:text-purple-800"
+                  onClick={() => setShowStoreNameTooltip(!showStoreNameTooltip)}
+                >
+                  <FontAwesomeIcon icon={faQuestionCircle} />
+                </button>
+              </label>
+              {showStoreNameTooltip && (
+                <div className="mt-2 p-4 bg-purple-50 text-purple-800 rounded-lg">
+                  <p>Enter the name of your store. This will be used in your store’s URL (e.g., my-store).</p>
+                </div>
+              )}
               <input
                 type="text"
                 id="storeName"
@@ -117,13 +157,47 @@ const ChooseStoreType: React.FC = () => {
                 required
               />
             </div>
+
+            {/* Location Count Field */}
+            <div>
+              <label htmlFor="locationCount" className="block text-sm font-medium text-gray-700">
+                Number of Locations
+                <button
+                  type="button"
+                  className="ml-2 text-purple-600 hover:text-purple-800"
+                  onClick={() => setShowLocationTooltip(!showLocationTooltip)}
+                >
+                  <FontAwesomeIcon icon={faQuestionCircle} />
+                </button>
+              </label>
+              {showLocationTooltip && (
+                <div className="mt-2 p-4 bg-purple-50 text-purple-800 rounded-lg">
+                  <p>Specify the number of locations for your store. You can update this later.</p>
+                </div>
+              )}
+              <input
+                type="number"
+                id="locationCount"
+                min="1"
+                value={locationCount}
+                onChange={(e) => setLocationCount(Math.max(1, parseInt(e.target.value) || 1))}
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                required
+              />
+            </div>
+
+            {/* Submit Button */}
             <motion.button
               type="submit"
-              className="w-full py-3 px-6 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 transition-all duration-300 flex items-center justify-center space-x-2"
+              className={`w-full py-3 px-6 rounded-lg font-semibold text-lg transition-all ${
+                isFormValid
+                  ? 'bg-purple-600 text-white hover:bg-purple-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
               variants={buttonVariants}
-              whileHover="hover"
-              whileTap="tap"
-              disabled={isLoading}
+              whileHover={isFormValid ? "hover" : undefined}
+              whileTap={isFormValid ? "tap" : undefined}
+              disabled={!isFormValid || isLoading}
             >
               {isLoading ? (
                 <>

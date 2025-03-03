@@ -3,7 +3,7 @@ import React from 'react';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-vintage-rose-deep-purple text-white p-6 w-screen">
+    <footer className="bg-teal-900 text-white p-6 w-screen">
       <div className="w-full mx-auto text-center px-4">
         <p>© 2025 POS SaaS. All rights reserved.</p>
         <div className="mt-2 space-x-4">

@@ -6,6 +6,7 @@ const pool = require('./config/db'); // Use pool from config/db.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
+const path = require('path'); // Add this import at the top
 require('dotenv').config();
 
 const app = express();
@@ -100,6 +101,11 @@ const authenticate = async (req, res, next) => {
     return res.status(401).json({ message: 'Unauthorized: Invalid token' });
   }
 };
+
+app.use(express.static(path.join(__dirname, 'build'))); // Serve static files
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
 // Auth Routes
 app.post('/api/auth/register', async (req, res) => {
   const { name, email, password } = req.body;
@@ -160,7 +166,7 @@ app.post('/api/auth/login', async (req, res) => {
       ? '/superadmin-dashboard' 
       : (user[0].email_verified_at && user[0].is_store_setup_complete && user[0].plan_id && store.length > 0) 
         ? `/dashboard/${store[0].slug}` 
-        : '/statusdashboard';
+        : '/onboarding';
 
     res.json({
       token,
@@ -304,23 +310,39 @@ app.get('/api/status', authenticate, async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
-
 app.post('/api/stores', authenticate, async (req, res) => {
-  const { name, type } = req.body;
+  const { name, type, locationCount } = req.body;
   try {
     const slug = name.toLowerCase().replace(/\s+/g, '-');
-    await pool.query(
-      'INSERT INTO stores (name, slug, type, user_id, created_at) VALUES (?, ?, ?, ?, ?)',
-      [name, slug, type, req.user.id, new Date()]
+
+    // Insert into stores table
+    const storeResult = await pool.query(
+      'INSERT INTO stores (name, slug, type, user_id, created_at, location_count) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, slug, type, req.user.id, new Date(), locationCount]
     );
-    await pool.query('UPDATE users SET store_id = LAST_INSERT_ID(), is_store_setup_complete = 1 WHERE id = ?', [req.user.id]);
+
+    const storeId = storeResult.insertId;
+
+    // Insert into store_users table
+    await pool.query(
+      'INSERT INTO store_users (user_id, store_id, role, created_at) VALUES (?, ?, ?, ?)',
+      [req.user.id, storeId, 'owner', new Date()]
+    );
+
+    // Insert into store_locations table
+    for (let i = 0; i < locationCount; i++) {
+      await pool.query(
+        'INSERT INTO store_locations (store_id, address, phone, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+        [storeId, `Location ${i + 1} Address`, `555-0${i+1}23`, new Date(), new Date()]
+      );
+    }
+    await pool.query('UPDATE users SET store_id = ?, is_store_setup_complete = 1 WHERE id = ?', [storeId, req.user.id]);
     res.status(201).json({ message: 'Store created successfully', slug });
   } catch (error) {
     console.error('Store creation error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
-
 app.post('/api/subscriptions', authenticate, async (req, res) => {
   const { planId } = req.body;
   try {
