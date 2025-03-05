@@ -30,19 +30,24 @@ const Register: React.FC = () => {
     if (!isLongEnough || !hasUpperCase || !hasNumber) return;
     setIsLoading(true);
     try {
+      console.log('Sending POST request to /api/auth/register with:', { email, password, role: 'owner' });
       const response = await axios.post('http://localhost:5000/api/auth/register', {
         email,
         password,
         role: 'owner',
       });
-      console.log('Registration response:', response); // Debug log
-      if (response.status === 201) {
+      console.log('Registration response received:', response); // Detailed debug log
+      if (response.status === 201 && response.data.verificationToken) {
         navigate(`/confirm-email?email=${encodeURIComponent(email)}&token=${response.data.verificationToken}`);
       } else if (response.status === 204) {
-        navigate(`/confirm-email?email=${encodeURIComponent(email)}`); // Fallback for 204
+        navigate(`/confirm-email?email=${encodeURIComponent(email)}`);
+      } else if (response.status === 200 && response.data.verificationToken) {
+        navigate(`/confirm-email?email=${encodeURIComponent(email)}&token=${response.data.verificationToken}`);
+      } else {
+        console.error('Unexpected status or missing token:', response.status, response.data);
       }
     } catch (error) {
-      console.error('Registration error:', error); // Debug error
+      console.error('Registration error:', error.message, error.response ? error.response.data : 'No response data'); // Detailed error log
     } finally {
       setIsLoading(false);
     }
